@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>BTCR DID Method 0.1</title>
+    <meta http-equiv='Content-Type' content='text/html;charset=utf-8'/>
+    <!--
+      === NOTA BENE ===
+      For the three scripts below, if your spec resides on dev.w3 you can check them
+      out in the same tree and use relative links so that they'll work offline,
+     -->
+    <script src='https://www.w3.org/Tools/respec/respec-w3c-common' class='remove'></script>
+    <script src="./common.js"></script>
+    <script type="text/javascript" class="remove">
+      var respecConfig = {
+        // specification status (e.g. WD, LCWD, NOTE, etc.). If in doubt use ED.
+        specStatus: "CG-DRAFT",
+
+        // the specification's short name, as in http://www.w3.org/TR/short-name/
+        shortName: "didm-btcr",
+
+        // subtitle
+        subtitle: "A decentralized identifier method for the Bitcoin Blockchain",
+
+        // if you wish the publication date to be other than today, set this
+        // publishDate: "2009-08-06",
+
+        // if there is a previously published draft, uncomment this and set its YYYY-MM-DD date
+        // and its maturity status
+        // previousPublishDate: "1977-03-15",
+        // previousMaturity: "WD",
+
+        // extend the bibliography entries
+        localBiblio: ccg.localBiblio,
+
+        github: "https://github.com/w3c-ccg/didm-btcr",
+        includePermalinks: false,
+
+        // if there a publicly available Editor's Draft, this is the link
+        edDraftURI: "https://w3c-ccg.github.io/didm-btcr/",
+
+        // if this is a LCWD, uncomment and set the end of its review period
+        // lcEnd: "2009-08-05",
+
+        // editors, add as many as you like
+        // only "name" is required
+        editors: [
+          { name: "Christopher Allen", url: "http://www.lifewithalacrity.com/"},
+          { name: "Kim Hamilton Duffy", url: "https://github.com/kimdhamilton",
+            company: "Learning Machine", companyURL: "https://learningmachine.com/"},
+          { name: "Ryan Grant"}
+        ],
+
+        // authors, add as many as you like.
+        // This is optional, uncomment if you have authors as well as editors.
+        // only "name" is required. Same format as editors.
+        authors:
+        [
+          { name: "Christopher Allen", url: "http://www.lifewithalacrity.com/"},
+          { name: "Kim Hamilton Duffy", url: "https://github.com/kimdhamilton",
+            company: "Learning Machine", companyURL: "https://learningmachine.com/"},
+          { name: "Ryan Grant"}
+        ],
+
+        // name of the WG
+        wg:          "Credentials Community Group",
+
+        // URI of the public WG page
+        wgURI:       "https://www.w3.org/community/credentials/",
+
+        // name (with the @w3c.org) of the public mailing to which comments are due
+        wgPublicList: "public-credentials",
+
+        // URI of the patent status for this WG, for Rec-track documents
+        // !!!! IMPORTANT !!!!
+        // This is important for Rec-track documents, do not copy a patent URI from a random
+        // document unless you know what you're doing. If in doubt ask your friendly neighbourhood
+        // Team Contact.
+        wgPatentURI: "https://www.w3.org/community/about/agreements/cla/",
+        maxTocLevel: 4,
+        inlineCSS: true
+      };
+    </script>
+    <style>
+pre .highlight {
+  font-weight: bold;
+  color: green;
+}
+pre .comment {
+  font-weight: bold;
+  color: Gray;
+}
+.sequence-diagram {
+  margin: auto;
+}
+    </style>
+  </head>
+  <body>
+    <section id='abstract'>
+      <p>
+
+The Bitcoin Reference DID method specification conforms to the requirements specified in the <a href="https://w3c-ccg.github.io/did-spec/">DID specification</a> currently published by the W3C Credentials Community Group. For more information about DIDs and DID method specifications, please see the <a href="https://github.com/WebOfTrustInfo/rebooting-the-web-of-trust-fall2017/blob/master/topics-and-advance-readings/did-primer.md">DID Primer</a>.
+
+      </p>
+    </section>
+
+<section id='sotd'>
+  <p>
+Comments regarding this document are welcome. Please file issues
+directly on <a href="https://github.com/w3c-ccg/didm-btcr/issues/">GitHub</a>,
+or send them to
+<a href="mailto:public-credentials@w3.org">public-credentials@w3.org</a>
+(<a href="mailto:public-credentials-request@w3.org?subject=subscribe">subscribe</a>,
+<a href="https://lists.w3.org/Archives/Public/public-credentials/">archives</a>).
+  </p>
+
+
+  <p>
+Work on this specification has also been supported by the Rebooting the
+Web of Trust group facilitated by Christopher Allen, Shannon Appelcline,
+Kiara Robles, Kaliya Young, Brian Weller, Betty Dhamers, and Joe Andrieu. TODO?
+  </p>
+
+  <p>
+Work on this specification has also been supported by the Internet Identity
+Workshop co-founded by Phil Windley, Kaliya Young, and Doc Searls and
+energized by true believers in the user-centric identity movement.
+  </p>
+
+</section>
+
+<section>
+  <h1>Introduction</h1>
+
+  <p>
+The Bitcoin Reference DID method (did:btcr) supports DIDs on the public Bitcoin blockchain. The Bitcoin Reference method has minimal design goals: a DID trust anchor based on the Bitcoin blockchain, updates publicly visible and auditable via Bitcoin transactions, and optionally, additional DID Document information referenced in the transaction OP_RETURN data field. No other Personal Identifiable Information (PII) would be placed on the immutable blockchain.
+  </p>
+  <p>
+A secondary intent of the BTCR method is to serve as a very conservative, very secure example and some best practices for creating a DID method. The use cases for BTCR are focused on anonymous and pseudo-anonymous identities, web-of-trust style webs of identity, and absolute mimimal personal information disclosure. Other DID methods will likely need to loosen these standards.
+  </p>
+  <p>
+Some aspects of the BTCR method will not be practical if inappropriately scaled — for instance, there is a transaction cost to update keys and DDO object, potential UTXO inflation (i.e. one additional unspent output for every BTCR-based identity), and even if segwit isn't used it could cause blockchain bloat. However, identities using the BTCR method can be a strong as Bitcoin itself -- currently securing billions of dollars of digital value.
+  </p>
+</section>
+
+<section>
+  <h1>Examples</h1>
+  <p>
+    [examples of DID documents or other artifacts used by this method]
+  </p>
+</section>
+
+<section>
+  <h1>Target System(s)</h1>
+  <p>
+The BTCR Method Spec targets the Bitcoin blockchain.
+
+Current Bitcoin networks supported are mainnet (BTC) and testnet3 (XTN).
+  </p>
+</section>
+
+
+    <section id="conformance">
+      <!-- boilerplate will be added here -->
+      <p>
+
+      </p>
+    </section>
+  </section>
+
+</section>
+
+
+<section class="normative">
+  <h2>Terminology</h2>
+
+  <dl class="termlist">
+    <dt><dfn data-lt="blocks">block</dfn></dt>
+    <dd>
+A data structure that contains one or more <a>ledger</a> <a>events</a>.
+    </dd>
+    <dt><dfn data-lt="blockchain|blockchains">blockchain</dfn></dt>
+    <dd>
+A <a>ledger</a> containing a series of <a>blocks</a> where the ordering of
+the blocks can be mathematically proven to be correct.
+    </dd>
+    <dt><dfn data-lt="consensus algorithm|consensus algorithms">consensus algorithm</dfn></dt>
+    <dd>
+An algorithm that enables multiple nodes in a network to make a decision
+in a deterministic fashion.
+    </dd>
+    <dt><dfn data-lt="continuation did document|continuation document">continuation DID document</dfn></dt>
+    <dd>
+A continuation DID document is a partial document external to the Bitcoin transaction providing additional DID document keys, ...
+    </dd>
+    <dt><dfn data-lt="cryptographic ledger|cryptographic ledgers|ledger">cryptographic ledger</dfn></dt>
+    <dd>
+A method of recording changes in a <a>state machine</a> where the
+accuracy of the ledger can be mathematically proven to be correct.
+    </dd>
+    <dt><dfn data-lt="decentralized system|decentralized systems">decentralized system</dfn></dt>
+    <dd>
+A system in which lower level components operate on local information to
+accomplish global goals. For example, an ant colony is a decentralized system
+as there is no central control determining when food must be collected or
+how new tunnels should be excavated.
+    </dd>
+    <dt><dfn data-lt="decentralized ledger|decentralized ledgers">decentralized ledger</dfn></dt>
+    <dd>
+A <a>cryptographic ledger</a> that uses a <a>consensus algorithm</a> that
+enables a network of <a>ledger nodes</a> to come to consensus in a
+decentralized yet deterministic fashion.
+    </dd>
+  </dl>
+
+</section>
+
+<section>
+  <h1>Basic Concepts</h1>
+
+  <section>
+    <h2>BTCR DID Format</h2>
+
+    <p>
+BTCR DIDs have the following format:
+    </p>
+
+    <pre class="nohighlight">
+      btcr-did        = "did:btcr:" btcr-identifier
+                       [ ";" did-service ] [ "/" did-path ]
+                       [ "?" did-query ] [ "#" did-fragment ]
+      btcr-identifier = txref-ext encoded transaction
+    </pre>
+
+
+<p class="issue"
+      title="Need to finalize encoding of transaction">
+BTCR uses TX references that deviate from Bech32 Encoded Transaction Position References. <a href="https://github.com/w3c-ccg/didm-btcr/issues/1">didm-btcr issue 1</a>
+
+Once the above issue is decided, btcr-identifier format should be defined similar to 
+<a href="https://github.com/veleslavs/bips/blob/c83837536d6629f754ce5a88bbe245e0a615e76e/bip-XXXX-Bech32_Encoded_Transaction_Position_References.mediawiki">Bech32 Encoded Transaction Position References</a>
+    </p>
+
+    <p>
+BTCR DID identifiers are a TXREF-EXT encoding of the DID creation/update transaction.
+
+This encoding is based on <a href="https://github.com/veleslavs/bips/blob/c83837536d6629f754ce5a88bbe245e0a615e76e/bip-XXXX-Bech32_Encoded_Transaction_Position_References.mediawiki">Bech32 Encoded Transaction Position References</a>, but with the following modifications:
+
+<ol>
+  <li>Remove network prefixes (e.g. txtest1)</li>
+  <li>Future: support for specifying tx output</li>
+  <li>Future: support lightning ids</li>
+</ol>
+
+
+Reference implementations:
+- https://github.com/WebOfTrustInfo/txref-conversion-js
+- https://github.com/WebOfTrustInfo/btcr-did-tools-js
+
+Issue: https://github.com/w3c-ccg/didm-btcr/issues/1
+
+    </p>
+
+    <pre class="example nohighlight" title="A valid BTCR Decentralized Identifier on the Bitcoin Testnet Network">
+      did:btcr:xkyt-fzgq-qq87-xnhn
+    </pre>
+
+  </section>
+
+  <section>
+
+    <h2>Authentication</h2>
+
+    <p>
+Authentication is the process the ledger uses to determine if an entity
+is associated with a DID. By convention, BTCR grants the transaction signing key the ability to authenticate. Authentication is the only default ability; meaning that if there is no continuation DID Document, then authentication with the transaction signing key is the only ability granted by the BTCR DID.
+    </p>
+
+    <pre class="example nohighlight" title="Expressing authentication credentials">
+{
+  "@context": "https://w3id.org/btcr/v1",
+  "id": "did:btcr:xkyt-fzgq-qq87-xnhn",
+  <span class="highlight">"authentication": [... array of acceptable authentication suites ...]</span>
+}
+    </pre>
+
+    <p>
+A detailed example of a valid set of authentication credentials follows:
+    </p>
+
+    <pre class="example nohighlight" title="Detailed example of authentication credentials entry">{
+  "@context": "https://w3id.org/btcr/v1",
+  "id": "did:btcr:xkyt-fzgq-qq87-xnhn",
+  "authentication": [{
+    "type": "EdDsaSAPublicKeySecp256k1Authentication",
+    "publicKey": {
+      "id": "did:btcr:xkyt-fzgq-qq87-xnhn#keys-1",
+      "type": "EdDsaSAPublicKeySecp256k1",
+      "owner": "did:btcr:xkyt-fzgq-qq87-xnhn",
+      "publicKeyHex": "0280e0b456b9e97eecb8028215664c5b99ffa79628b60798edd9d562c6db1e4f85"
+    }
+  }],
+  ...</pre>
+    
+  </section>
+
+  <section>
+
+    <h2>Continuation DID Documents</h2>
+
+    <p>
+Because BTCR DIDs have very limited capabilities (authentication with the tx signing key), BTCR uses the concept of continuation documents to provide additional key material, capabilities, and service endpoints. 
+    </p>
+
+    <p>
+The continuation DID document is referenced by a link from the transaction OP_RETURN field. The continuation DID document must be signed in one of the following ways:
+
+  <ol>
+    <li>Continuation DID document is stored in an immutable store. In this case, the signature on the transaction suffices to sign the continuation DID document.</li>
+    <li>Continuation DID document is signed with the transaction signing key, along with a timestamp. This is necessary if the document is in a mutable store; otherwise the document can be changed at any time.
+    </li>
+  </ol>
+    </p>
+
+    <p>
+Immutable storage for the DID document is preferred. A DID document in a mutable store _must_ be signed exactly once with the timestamp.  
+    </p>
+
+
+    <p>
+      <ul>
+        <li>
+      TODO: in mutable case, are there any restrictions on delta btw tx timestamp and DID document timestamp? </li>
+      <li>
+        TODO: where did we land on presence of @id in mutable store case. Must it be present, in which case the document can only be updated after the tx is confirmed.
+      </li>
+
+    </ul>
+    </p>
+</section>
+</section>
+
+<section>
+
+  <h1>Operations</h1>
+
+  <p class="issue"
+      title="Specify number of confirmations">
+Specify number of confirmations, range, and/or confidence tradeoffs: <a href="https://github.com/w3c-ccg/didm-btcr/issues/7">didm-btcr issue 7</a>
+
+    </p>
+
+  <section>
+    <h2>Creating a DID</h2>
+
+    <p>
+A BTCR DID is created by creating a Bitcoin transaction with an optional OP_RETURN data field referring to additional DID document material, as described in this section.
+    </p>
+
+    <p>
+Abbreviations:
+<ul>
+  <li> Bi = bitcoin address i </li>
+  <li> Pi = public key i </li>
+  <li> Si = signing key i (or private key i) </li>
+</ul>
+    </p>
+
+    <p>
+Creating the initial BTCR DID:
+<ol>
+  <li> Create key set (B0/P0/S0) </li>
+  <li> Create key set (B1/P1/S1) </li>
+  <li> Create Bitcoin transaction: 
+    <ul>
+      <li> Output: Change address B1 </li>
+      <li> Optional output: OP_RETURN <link to DDO continuation> </li>
+      <li> Signing key is S0, which reveals public key P0 in the transaction </li>
+    </ul>
+  </li>
+  <li> Issue TX0 and wait for confirmation. <a href="https://github.com/w3c-ccg/didm-btcr/issues/7">didm-btcr issue 7</a></li>
+  <li> Get Extended TX Ref encoding of the confirmed transaction TXREF(TX0) <a href="https://github.com/w3c-ccg/didm-btcr/issues/1">didm-btcr issue 1</a></li>
+
+</ol>
+At this point we have a DID of the format did:btcr:TXREF(TX0). 
+</p>
+  </section>
+
+  <section>
+    <h2>Reading a DID</h2>
+    <p>
+
+<ol>
+  <li>Extract the transaction references from the BTCR DID (i.e. did:btcr:TXREF(TX0)) </li>
+  <li>Look up transaction. Is the transaction output spent?
+    <ul>
+      <li> no: this is the latest version of the DID. From this we can construct the DID Description (described below)</li>
+      <li> yes: keep following transaction chain until the latest with an unspent output is found</li>
+    </ul>
+  </li>
+
+  See <a href="https://github.com/WebOfTrustInfo/rebooting-the-web-of-trust-spring2018/pull/74"> BTCR resolver</a> for additional details. TODO: merge in
+    </p>
+  </section>
+
+  <section>
+    <h2>Updating a DID</h2>
+    <p>
+An entity updates the BTCR DID Description by spending the current transaction output. The BTCR Transaction Structure diagram shows how that is done in this second transaction.
+
+<ol>
+  <li> Create new tx like above, but send to B2 </li>
+  <li> Set the OP_RETURN to the new DID Description </li>
+  <li> Sign tx with S1 (P1 is revealed) </li>
+</ol>
+    </p>
+
+  </section>
+
+  <section>
+    <h2>Deleting a DID</h2>
+    <p>
+
+    </p>
+  </section>
+
+</section>
+
+<section>
+  <h1>Versioning</h1>
+  <p>
+Version of this Specification
+[Define how this spec will be versioned. This SHOULD be by using the ReSpec template and standard ReSpec versioning mechanism.]]
+Version of the JSON-LD Context
+[Define how your JSON-LD context will be versioned. This MUST use the mechanism defined in the DID spec.]]
+  </p>
+</section>
+
+<section>
+  <h1>Security Considerations</h1>
+  <p>
+
+Requirements from Method Spec Template definition:
+<pre>
+At least the following forms of attack MUST be considered: eavesdropping, replay, message insertion, deletion, modification, impersonation, and man-in-the-middle.  
+
+Potential denial of service attacks MUST be identified as well.  
+
+If the protocol incorporates cryptographic protection mechanisms, it should be clearly indicated which portions of the data are protected and what the protections are (i.e., integrity only, confidentiality, and/or endpoint authentication, etc.). 
+
+Some indication should also be given to what sorts of attacks the cryptographic protection is susceptible.  
+
+Data which should be held secret (keying material, random seeds, etc.) should be clearly labeled. 
+
+If the technology involves authentication, particularly user-host authentication, the security of the authentication method MUST be clearly specified.
+
+Residual risks (such as the risks from compromise in a related protocol, incorrect implementation, or cipher) after threat mitigation has been deployed.
+
+This section MUST provide integrity protection and update authentication for all operations required by Section 7 of this specification (DID Operations).
+
+</pre>
+
+
+    <section>
+      <h2>Binding of Identity</h2>
+      <p></p>
+    </section>
+
+    <section>
+      <h2>Authentication Service Endpoints</h2>
+      <p></p>
+    </section>
+
+    <section>
+      <h2>Non-Repudiation</h2>
+      <p></p>
+    </section>
+
+    <section>
+      <h2>Notification of DDO Changes</h2>
+      <p></p>
+    </section>
+
+    <section>
+      <h2>Key and Signature Expiration</h2>
+      <p></p>
+    </section>
+
+    <section>
+      <h2>Key Revocation and Recovery</h2>
+      <p></p>
+    </section>
+
+
+  </p>
+</section>
+
+
+<section>
+  <h1>Privacy Considerations</h1>
+  <p>
+
+    <section>
+      <h2> Keep Personally-Identifiable Information (PII) Off-Ledger</h2>
+      <p></p>
+    </section>
+
+    <section>
+      <h2>DDO Correlation Risks</h2>
+      <p></p>
+    </section>
+
+    <section>
+      <h2>Herd Privacy</h2>
+      <p></p>
+    </section>
+
+</p>
+</section>
+
+<section>
+  <h1>Appendix A: Examples</h2>
+
+  <section>
+    <h2>Typical DID Document</h2>
+
+    <p>
+The following is a complete example of a typical BTCR DID Document:
+    </p>
+
+    <pre class="example nohighlight">
+{
+      "@context": "https://w3id.org/did/v1",
+      "id": "did:btcr:xkyt-fzgq-qq87-xnhn",
+      "publicKey": [
+        {
+            "id": "did:btcr:xkyt-fzgq-qq87-xnhn#keys-1",
+            "owner": "did:btcr:xkyt-fzgq-qq87-xnhn",
+            "type": "EdDsaSAPublicKeySecp256k1",
+            "publicKeyHex": "0280e0b456b9e97eecb8028215664c5b99ffa79628b60798edd9d562c6db1e4f85"
+        },
+        {
+            "id": "did:btcr:xkyt-fzgq-qq87-xnhn#keys-2",
+            "type": "RsaVerificationKey2018",
+            "publicKeyPem": "-----BEGIN PUBLIC KEY...END PUBLIC KEY-----\r\n",
+            "owner": "did:btcr:xkyt-fzgq-qq87-xnhn"
+        }
+      ],
+      "authentication": [
+        {
+            "type": "EdDsaSAPublicKeySecp256k1Authentication",
+            "publicKey": "#keys-1"
+        },
+        {
+            "type": "RsaSignatureAuthentication2018",
+            "publicKey": "#keys-2"
+        }
+      ],
+      "service": [
+         {
+             "type": "BTCREndpoint",
+              "serviceEndpoint": "https://raw.githubusercontent.com/kimdhamilton/did/master/ddo.jsonld"
+         }
+      ],
+      "SatoshiAuditTrail": [
+        {
+            "chain": "testnet",
+            "blockhash": "0000000000000722ded9d85d67e145ba41c53ef2e8680f75540a08b885febba5",
+            "blockindex": 2,
+            "outputindex": 1,
+            "blocktime": "2017-09-23T17:27:56.682Z",
+            "time": 1499501000,
+            "timereceived": "2017-09-23T17:27:56.682Z",
+            "burn-fee": -0.05
+        }
+      ]
+    }
+
+    </pre>
+  </section>
+
+
+</section>
+
+</body>
+</html>
