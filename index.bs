@@ -1,0 +1,333 @@
+<pre class='metadata'>
+Title: BTCR DID Method
+Shortname: didm-btcr
+Level: 1
+Status: w3c/CG-DRAFT
+Group: Credentials Community Group
+URL: https://w3c-ccg.github.io/didm-btcr/
+
+Editor: Christopher Allen, http://www.lifewithalacrity.com/
+Editor: Kim Hamilton Duffy, Learning Machine https://learningmachine.com/, https://github.com/kimdhamilton
+Editor: Ryan Grant
+Editor: Dan Pape, https://github.com/danpape
+
+Abstract: The Bitcoin Reference DID method specification conforms to the requirements specified in the <a href="https://w3c-ccg.github.io/did-spec/">DID specification</a> currently published by the W3C Credentials Community Group. For more information about DIDs and DID method specifications, please see the <a href="https://github.com/WebOfTrustInfo/rwot7/blob/master/topics-and-advance-readings/did-primer.md">DID Primer</a>.
+
+</pre>
+
+Introduction {#intro}
+=====================
+
+The Bitcoin Reference DID method (did:btcr) supports DIDs on the public
+Bitcoin [=blockchain=]. The Bitcoin Reference method has minimal design
+goals: a DID trust anchor based on the Bitcoin blockchain, updates
+publicly visible and auditable via Bitcoin transactions, and optionally,
+additional DID Document information referenced in the transaction
+OP_RETURN data field. No other Personal Identifiable Information (PII)
+would be placed on the immutable blockchain.
+
+A secondary intent of the BTCR method is to serve as a very
+conservative, very secure example and some best practices for creating a
+DID method. The use cases for BTCR are focused on anonymous and
+pseudo-anonymous identities, web-of-trust style webs of identity, and
+absolute mimimal personal information disclosure. Other DID methods will
+likely need to loosen these standards.
+
+Some aspects of the BTCR method will not be practical if inappropriately
+scaled — for instance, there is a transaction cost to update keys and
+DDO object, potential UTXO inflation (i.e. one additional unspent output
+for every BTCR-based identity), and even if segwit isn't used it could
+cause blockchain bloat. However, identities using the BTCR method can be
+a strong as Bitcoin itself -- currently securing billions of dollars of
+digital value.
+
+Terminology {#terminology}
+===========
+
+<dfn>block</dfn>: A data structure that contains one or more [=ledger=] events.
+
+<dfn>blockchain</dfn>: A [=ledger=] containing a series of [=blocks=]
+where the ordering of the blocks can be mathematically proven to be
+correct.
+
+<dfn>consensus algorithm</dfn>: An algorithm that enables multiple nodes
+in a network to make a decision in a deterministic fashion.
+
+<dfn>continuation [=DID=] document</dfn>: A continuation [=DID=] document is a
+partial document external to the Bitcoin transaction providing
+additional DID document keys, ...
+
+<dfn>cryptographic ledger</dfn>: A method of recording changes in a
+state machine where the accuracy of the ledger can be mathematically
+proven to be correct.
+
+<dfn>DID</dfn>: a distributed identitfier.
+
+<dfn>decentralized system</dfn>: A system in which lower level
+components operate on local information to accomplish global goals. For
+example, an ant colony is a decentralized system as there is no central
+control determining when food must be collected or how new tunnels
+should be excavated.
+
+<dfn>decentralized ledger</dfn>: A [=cryptographic ledger=] that uses a
+[=consensus algorithm=] that enables a network of ledger nodes to come
+to consensus in a decentralized yet deterministic fashion.
+
+Basic Concepts {#concepts}
+==============
+
+Txref and Txref-ext {#txref}
+-------------------
+
+Txref encoded transaction ids are detailed BIP 136, <a
+href="https://github.com/veleslavs/bips/blob/c83837536d6629f754ce5a88bbe245e0a615e76e/bip-XXXX-Bech32_Encoded_Transaction_Position_References.mediawiki">Bech32
+Encoded Transaction Position References</a>. A txref encodes the chain,
+blockheight, and transaction index where the transaction is located.
+
+<div class="example" heading="txref (base)"> txid
+89b3cc05d196836064ab189e9747f05ab036e29e24340dd360e05a1b04ad8637 is on
+the testnet3 chain, at blockheight 1290689, transaction position 6. Its
+txref is <pre>txtest1-xzuc-wzcq-qqz6-565h</pre></div>
+
+Issue: BTCR uses txref-exts, or txrefs that deviate from Bech32 Encoded
+Transaction Position References: <a
+href="https://github.com/w3c-ccg/didm-btcr/issues/1">didm-btcr issue
+1</a>
+
+This extended encoding is similar to the base encoding, but with the
+following modifications:
+
+1. Remove network prefixes (e.g. txtest1)
+2. Support for additionally specifying tx output index
+3. Future: support lightning ids
+
+<div class="example" heading="txref-ext"> txid
+89b3cc05d196836064ab189e9747f05ab036e29e24340dd360e05a1b04ad8637 is on
+the testnet3 chain, at blockheight 1290689, transaction position 6 and
+we want to specify the second tx output (index 1). Its txref-ext is
+<pre>xzuc-wzcq-qqpq-qapuzs8</pre></div>
+
+
+BTCR DID Format {#format}
+---------------
+
+BTCR DIDs have the following format:
+
+<pre>
+      btcr-did        = "did:btcr:" btcr-identifier
+                       [ ";" did-service ] [ "/" did-path ]
+                       [ "?" did-query ] [ "#" did-fragment ]
+      btcr-identifier = txref-ext encoded transaction id
+</pre>
+
+<div class="example" heading="BTCR DID"> A BTCR DID for txid
+89b3cc05d196836064ab189e9747f05ab036e29e24340dd360e05a1b04ad8637, on the
+testnet3 chain, at blockheight 1290689, transaction position 6 and tx
+output index 1 is <pre>did:btcr:xzuc-wzcq-qqpq-qapuzs8</pre></div>
+
+Authentication {#authentication}
+--------------
+
+Authentication is the process the ledger uses to determine if an entity
+is associated with a DID. By convention, BTCR grants the transaction
+signing key the ability to authenticate. Authentication is the only
+default ability; meaning that if there is no continuation DID Document,
+then authentication with the transaction signing key is the only ability
+granted by the BTCR DID.
+
+<div class="example" heading="Expressing authentication credentials">
+<pre>
+{
+  "@context": "https://w3id.org/btcr/v1",
+  "id": "did:btcr:xkyt-fzgq-qq87-xnhn",
+  <span class="highlight">"authentication": [... array of acceptable authentication suites ...]</span>
+}
+</pre>
+</div>
+
+A detailed example of a valid set of authentication credentials follows:
+
+<div class="example" heading="Detailed example of authentication
+credentials entry">
+<pre>
+{
+  "@context": "https://w3id.org/btcr/v1",
+  "id": "did:btcr:xkyt-fzgq-qq87-xnhn",
+  "authentication": [{
+    "type": "EdDsaSAPublicKeySecp256k1Authentication",
+    "publicKey": {
+      "id": "did:btcr:xkyt-fzgq-qq87-xnhn#keys-1",
+      "type": "EdDsaSAPublicKeySecp256k1",
+      "owner": "did:btcr:xkyt-fzgq-qq87-xnhn",
+      "publicKeyHex": "0280e0b456b9e97eecb8028215664c5b99ffa79628b60798edd9d562c6db1e4f85"
+    }
+  }],
+  ...
+</pre>
+</div>
+
+Continuation DID Documents {#continuation}
+--------------------------
+
+Because BTCR DIDs have very limited capabilities (authentication with
+the tx signing key), BTCR uses the concept of continuation documents to
+provide additional key material, capabilities, and service endpoints.
+
+The continuation DID document is referenced by a link from the
+transaction OP_RETURN field. The continuation DID document must be
+signed in one of the following ways:
+
+1. Continuation DID document is stored in an immutable store. In this case, the signature on the transaction suffices to sign the continuation DID document.
+
+2. Continuation DID document is signed with the transaction signing key, along with a timestamp. This is necessary if the document is in a mutable store; otherwise the document can be changed at any time.
+
+Immutable storage for the DID document is preferred. A DID document in a
+mutable store MUST be signed exactly once with the timestamp.
+
+* TODO: in mutable case, are there any restrictions on delta btw tx timestamp and DID document timestamp?
+
+* TODO: where did we land on presence of @id in mutable store case. Must it be present, in which case the document can only be updated after the tx is confirmed.
+
+
+Operations {#operations}
+==========
+
+Creating a DID {#creating}
+--------------
+
+A BTCR DID is created by creating a Bitcoin transaction with an optional
+OP_RETURN data field referring to additional DID document material, as
+described in this section.
+
+Abbreviations:
+* Bi = bitcoin address i
+* Pi = public key i
+* Si = signing key i (or private key i)
+
+Creating the initial BTCR DID:
+1. Create key set (B0/P0/S0)
+2. Create key set (B1/P1/S1)
+3. Create Bitcoin transaction:
+    1. Output: Change address B1
+    2. Optional output: OP_RETURN <link to DDO continuation>
+    3. Signing key is S0, which reveals public key P0 in the transaction
+4. Issue TX0 and wait for confirmation. <a href="https://github.com/w3c-ccg/didm-btcr/issues/7">didm-btcr issue 7</a>
+5. Get Extended TX Ref encoding of the confirmed transaction TXREF(TX0) <a href="https://github.com/w3c-ccg/didm-btcr/issues/1">didm-btcr issue 1</a>
+
+At this point we have a DID of the format did:btcr:TXREF(TX0). 
+
+Reading a DID {#reading}
+-------------
+
+1. Extract the transaction references from the BTCR DID (i.e. did:btcr:TXREF(TX0))
+2. Look up transaction. Is the transaction output spent?
+    * no: this is the latest version of the DID. From this we can construct the DID Description (described below)
+    * yes: keep following transaction chain until the latest with an unspent output is found
+
+See <a
+href="https://github.com/WebOfTrustInfo/rebooting-the-web-of-trust-spring2018/pull/74">
+BTCR resolver</a> for additional details. TODO: merge in
+
+
+Updating a DID {#updating}
+--------------
+
+An entity updates the BTCR DID Description by spending the current
+transaction output. The BTCR Transaction Structure diagram shows how
+that is done in this second transaction.
+
+1. Create new tx like above, but send to B2
+2. Set the OP_RETURN to the new DID Description
+3. Sign tx with S1 (P1 is revealed)
+
+
+Deleting a DID {#deleting}
+--------------
+
+TODO
+
+
+Versioning {#versioning}
+==========
+
+Version of this Specification
+
+[Define how this spec will be versioned. This SHOULD be by using the
+bikeshed versioning mechanism.]
+
+Version of the JSON-LD Context
+
+[Define how your JSON-LD context will be versioned. This MUST use the
+mechanism defined in the DID spec.]
+
+
+Security Considerations {#security}
+=======================
+
+Requirements from Method Spec Template definition: 
+
+<pre> 
+
+At least the following forms of attack MUST be considered:
+eavesdropping, replay, message insertion, deletion, modification,
+impersonation, and man-in-the-middle.
+
+Potential denial of service attacks MUST be identified as well.
+
+If the protocol incorporates cryptographic protection mechanisms, it
+should be clearly indicated which portions of the data are protected and
+what the protections are (i.e., integrity only, confidentiality, and/or
+endpoint authentication, etc.).
+
+Some indication should also be given to what sorts of attacks the
+cryptographic protection is susceptible.
+
+Data which should be held secret (keying material, random seeds, etc.)
+should be clearly labeled.
+
+If the technology involves authentication, particularly user-host
+authentication, the security of the authentication method MUST be
+clearly specified.
+
+Residual risks (such as the risks from compromise in a related protocol,
+incorrect implementation, or cipher) after threat mitigation has been
+deployed.
+
+This section MUST provide integrity protection and update authentication
+for all operations required by Section 7 of this specification (DID
+Operations).
+</pre>
+
+Binding of Identity
+-------------------
+
+Authentication Service Endpoints
+--------------------------------
+
+Non-Repudiation
+---------------
+
+Notification of DDO Changes
+---------------------------
+
+Key and Signature Expiration
+----------------------------
+
+Key Revocation and Recovery
+---------------------------
+
+Privacy Considerations
+======================
+
+Keep Personally-Identifiable Information (PII) Off-Ledger
+---------------------------------------------------------
+
+DDO Correlation Risks
+---------------------
+
+Herd Privacy
+------------
+
+
+
+
