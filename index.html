@@ -1213,7 +1213,7 @@ Possible extra rowspan handling
 	}
 </style>
   <meta content="Bikeshed version 465b801be4d2d8d27ff05c8248268063a2ecc8e3" name="generator">
-  <meta content="c8cd2a26055ddef32968e6dee6fa3fe96f659c4d" name="document-revision">
+  <meta content="c80e0a7a41b6840fef9327d1b423a02e2e17cc69" name="document-revision">
   <link continuation ddo to>
 <style>/* style-md-lists */
 
@@ -1403,7 +1403,7 @@ pre .property::before, pre .property::after {
   <div class="head">
    <p data-fill-with="logo"></p>
    <h1 class="p-name no-ref" id="title">BTCR DID Method</h1>
-   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Draft Community Group Report, <time class="dt-updated" datetime="2018-09-27">27 September 2018</time></span></h2>
+   <h2 class="no-num no-toc no-ref heading settled" id="subtitle"><span class="content">Draft Community Group Report, <time class="dt-updated" datetime="2018-12-13">13 December 2018</time></span></h2>
    <div data-fill-with="spec-metadata">
     <dl>
      <dt>Issue Tracking:
@@ -1420,7 +1420,7 @@ pre .property::before, pre .property::after {
    <div data-fill-with="warning"></div>
    <p class="copyright" data-fill-with="copyright"><a href="http://creativecommons.org/publicdomain/zero/1.0/" rel="license"><img alt="CC0" src="https://licensebuttons.net/p/zero/1.0/80x15.png"></a> To the extent possible under law, the editors have waived all copyright
 and related or neighboring rights to this work.
-In addition, as of 27 September 2018,
+In addition, as of 13 December 2018,
 the editors have made this specification available under the <a href="http://www.openwebfoundation.org/legal/the-owf-1-0-agreements/owfa-1-0" rel="license">Open Web Foundation Agreement Version 1.0</a>,
 which is available at http://www.openwebfoundation.org/legal/the-owf-1-0-agreements/owfa-1-0.
 Parts of this work may be from another specification document.  If so, those parts are instead covered by the license of that specification document. </p>
@@ -1469,6 +1469,11 @@ Parts of this work may be from another specification document.  If so, those par
       <li><a href="#keep-personally-identifiable-information-pii-off-ledger"><span class="secno">7.1</span> <span class="content">Keep Personally-Identifiable Information (PII) Off-Ledger</span></a>
       <li><a href="#ddo-correlation-risks"><span class="secno">7.2</span> <span class="content">DDO Correlation Risks</span></a>
       <li><a href="#herd-privacy"><span class="secno">7.3</span> <span class="content">Herd Privacy</span></a>
+     </ol>
+    <li>
+     <a href="#appendix-a-examples"><span class="secno"></span> <span class="content">Appendix A: Examples</span></a>
+     <ol class="toc">
+      <li><a href="#typical-did-document"><span class="secno"></span> <span class="content">Typical DID Document</span></a>
      </ol>
     <li><a href="#conformance"><span class="secno"></span> <span class="content"> Conformance</span></a>
     <li>
@@ -1528,39 +1533,39 @@ should be excavated.</p>
 to consensus in a decentralized yet deterministic fashion.</p>
    <h2 class="heading settled" data-level="3" id="concepts"><span class="secno">3. </span><span class="content">Basic Concepts</span><a class="self-link" href="#concepts"></a></h2>
    <h3 class="heading settled" data-level="3.1" id="txref"><span class="secno">3.1. </span><span class="content">Txref and Txref-ext</span><a class="self-link" href="#txref"></a></h3>
-   <p>Txref encoded transaction ids are detailed BIP 136, <a href="https://github.com/veleslavs/bips/blob/c83837536d6629f754ce5a88bbe245e0a615e76e/bip-XXXX-Bech32_Encoded_Transaction_Position_References.mediawiki">Bech32
+   <p>Txref encoded transaction ids are detailed BIP-0136, <a href="https://github.com/veleslavs/bips/blob/txrev_v2/bip-0136.mediawiki">Bech32
 Encoded Transaction Position References</a>. A txref encodes the chain,
 blockheight, and transaction index where the transaction is located.</p>
-   <div class="example no-marker" id="example-ab391891">
-    <a class="self-link" href="#example-ab391891"></a>
+   <div class="example no-marker" id="example-4042c018">
+    <a class="self-link" href="#example-4042c018"></a>
     <div class="marker">EXAMPLE: txref (base)</div>
      txid
-89b3cc05d196836064ab189e9747f05ab036e29e24340dd360e05a1b04ad8637 is on
-the testnet3 chain, at blockheight 1290689, transaction position 6. Its
+67c0ee676221d9e0e08b98a55a8bf8add9cba854f13dda393e38ffa1b982b833 is on
+the testnet3 chain, at blockheight 1201739, transaction position 2. Its
 txref is 
-<pre>txtest1-xzuc-wzcq-qqz6-565h</pre>
+<pre>txtest1:xkyt-fzzq-q4wq-f2d</pre>
    </div>
-   <p class="issue" id="issue-97a857cd"><a class="self-link" href="#issue-97a857cd"></a> BTCR uses txref-exts, or txrefs that deviate from Bech32 Encoded
-Transaction Position References: <a href="https://github.com/w3c-ccg/didm-btcr/issues/1">didm-btcr issue
+   <p class="issue" id="issue-400baf42"><a class="self-link" href="#issue-400baf42"></a> BTCR uses txref-exts, or extended txrefs that also include a
+reference to the TXO index within the transaction. <a href="https://github.com/w3c-ccg/didm-btcr/issues/1">didm-btcr issue
 1</a></p>
    <p>This extended encoding is similar to the base encoding, but with the
 following modifications:</p>
    <ol>
     <li data-md>
-     <p>Remove network prefixes (e.g. txtest1)</p>
+     <p>Remove chain-specific prefixes (e.g. <a class="property" data-link-type="propdesc">tx1</a> or <a class="property" data-link-type="propdesc">txtest1</a>)</p>
     <li data-md>
-     <p>Support for additionally specifying tx output index</p>
+     <p>Support for additionally specifying tx output index (txref-ext)</p>
     <li data-md>
      <p>Future: support lightning ids</p>
    </ol>
-   <div class="example no-marker" id="example-24a9d2f9">
-    <a class="self-link" href="#example-24a9d2f9"></a>
+   <div class="example no-marker" id="example-819a6dd7">
+    <a class="self-link" href="#example-819a6dd7"></a>
     <div class="marker">EXAMPLE: txref-ext</div>
      txid
-89b3cc05d196836064ab189e9747f05ab036e29e24340dd360e05a1b04ad8637 is on
-the testnet3 chain, at blockheight 1290689, transaction position 6 and
+67c0ee676221d9e0e08b98a55a8bf8add9cba854f13dda393e38ffa1b982b833 is on
+the testnet3 chain, at blockheight 1201739, transaction position 2 and
 we want to specify the second tx output (index 1). Its txref-ext is 
-<pre>xzuc-wzcq-qqpq-qapuzs8</pre>
+<pre>8kyt-fzzq-qpqq-ljsc-5l</pre>
    </div>
    <h3 class="heading settled" data-level="3.2" id="format"><span class="secno">3.2. </span><span class="content">BTCR DID Format</span><a class="self-link" href="#format"></a></h3>
    <p>BTCR DIDs have the following format:</p>
@@ -1569,14 +1574,14 @@ we want to specify the second tx output (index 1). Its txref-ext is
                  [ "?" did-query ] [ "#" did-fragment ]
 btcr-identifier = txref-ext encoded transaction id
 </pre>
-   <div class="example no-marker" id="example-7dc880fc">
-    <a class="self-link" href="#example-7dc880fc"></a>
+   <div class="example no-marker" id="example-aa00c35b">
+    <a class="self-link" href="#example-aa00c35b"></a>
     <div class="marker">EXAMPLE: BTCR DID</div>
      A BTCR DID for txid
-89b3cc05d196836064ab189e9747f05ab036e29e24340dd360e05a1b04ad8637, on the
-testnet3 chain, at blockheight 1290689, transaction position 6 and tx
+67c0ee676221d9e0e08b98a55a8bf8add9cba854f13dda393e38ffa1b982b833, on the
+testnet3 chain, at blockheight 1201739, transaction position 2 and tx
 output index 1 is 
-<pre>did:btcr:xzuc-wzcq-qqpq-qapuzs8</pre>
+<pre>did:btcr:8kyt-fzzq-qpqq-ljsc-5l</pre>
    </div>
    <h3 class="heading settled" data-level="3.3" id="authentication"><span class="secno">3.3. </span><span class="content">Authentication</span><a class="self-link" href="#authentication"></a></h3>
    <p>Authentication is the process the ledger uses to determine if an entity
@@ -1585,30 +1590,30 @@ signing key the ability to authenticate. Authentication is the only
 default ability; meaning that if there is no continuation DID Document,
 then authentication with the transaction signing key is the only ability
 granted by the BTCR DID.</p>
-   <div class="example no-marker" id="example-96342213">
-    <a class="self-link" href="#example-96342213"></a>
+   <div class="example no-marker" id="example-e7786a52">
+    <a class="self-link" href="#example-e7786a52"></a>
     <div class="marker">EXAMPLE: Expressing authentication credentials</div>
 <pre>{
   "@context": "https://w3id.org/btcr/v1",
-  "id": "did:btcr:xkyt-fzgq-qq87-xnhn",
+  "id": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l",
   <span class="highlight">"authentication": [... array of acceptable authentication suites ...]</span>
 }
 </pre>
    </div>
    <p>A detailed example of a valid set of authentication credentials follows:</p>
-   <div class="example no-marker" id="example-9830f601">
-    <a class="self-link" href="#example-9830f601"></a>
+   <div class="example no-marker" id="example-008aedff">
+    <a class="self-link" href="#example-008aedff"></a>
     <div class="marker">EXAMPLE: Detailed example of authentication
 credentials entry</div>
 <pre>{
   "@context": "https://w3id.org/btcr/v1",
-  "id": "did:btcr:xkyt-fzgq-qq87-xnhn",
+  "id": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l",
   "authentication": [{
     "type": "EdDsaSAPublicKeySecp256k1Authentication",
     "publicKey": {
-      "id": "did:btcr:xkyt-fzgq-qq87-xnhn#keys-1",
+      "id": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l#keys-1",
       "type": "EdDsaSAPublicKeySecp256k1",
-      "owner": "did:btcr:xkyt-fzgq-qq87-xnhn",
+      "owner": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l",
       "publicKeyHex": "0280e0b456b9e97eecb8028215664c5b99ffa79628b60798edd9d562c6db1e4f85"
     }
   }],
@@ -1748,6 +1753,60 @@ Operations).
    <h3 class="heading settled" data-level="7.1" id="keep-personally-identifiable-information-pii-off-ledger"><span class="secno">7.1. </span><span class="content">Keep Personally-Identifiable Information (PII) Off-Ledger</span><a class="self-link" href="#keep-personally-identifiable-information-pii-off-ledger"></a></h3>
    <h3 class="heading settled" data-level="7.2" id="ddo-correlation-risks"><span class="secno">7.2. </span><span class="content">DDO Correlation Risks</span><a class="self-link" href="#ddo-correlation-risks"></a></h3>
    <h3 class="heading settled" data-level="7.3" id="herd-privacy"><span class="secno">7.3. </span><span class="content">Herd Privacy</span><a class="self-link" href="#herd-privacy"></a></h3>
+   <h2 class="heading settled" id="appendix-a-examples"><span class="content">Appendix A: Examples</span><a class="self-link" href="#appendix-a-examples"></a></h2>
+   <h3 class="heading settled" id="typical-did-document"><span class="content">Typical DID Document</span><a class="self-link" href="#typical-did-document"></a></h3>
+   <p>The following is a complete example of a typical BTCR DID Document:</p>
+   <div class="example no-marker" id="example-acd1a28f">
+    <a class="self-link" href="#example-acd1a28f"></a>
+    <div class="marker">EXAMPLE: Typical BTCR DID Document</div>
+<pre>{
+  "@context": "https://w3id.org/did/v1",
+  "id": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l",
+  "publicKey": [
+    {
+      "id": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l#keys-1",
+      "owner": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l",
+      "type": "EdDsaSAPublicKeySecp256k1",
+      "publicKeyHex": "0280e0b456b9e97eecb8028215664c5b99ffa79628b60798edd9d562c6db1e4f85"
+    },
+    {
+      "id": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l#keys-2",
+      "type": "RsaVerificationKey2018",
+      "publicKeyPem": "-----BEGIN PUBLIC KEY...END PUBLIC KEY-----\r\n",
+      "owner": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l"
+    }
+  ],
+  "authentication": [
+    {
+      "type": "EdDsaSAPublicKeySecp256k1Authentication",
+      "publicKey": "#keys-1"
+    },
+    {
+      "type": "RsaSignatureAuthentication2018",
+      "publicKey": "#keys-2"
+    }
+  ],
+  "service": [
+    {
+      "type": "BTCREndpoint",
+      "serviceEndpoint": "https://raw.githubusercontent.com/kimdhamilton/did/master/ddo.jsonld"
+    }
+  ],
+  "SatoshiAuditTrail": [
+    {
+      "chain": "testnet",
+      "blockhash": "0000000000000722ded9d85d67e145ba41c53ef2e8680f75540a08b885febba5",
+      "blockindex": 2,
+      "outputindex": 1,
+      "blocktime": "2017-09-23T17:27:56.682Z",
+      "time": 1499501000,
+      "timereceived": "2017-09-23T17:27:56.682Z",
+      "burn-fee": -0.05
+    }
+  ]
+}
+</pre>
+   </div>
   </main>
   <div data-fill-with="conformance">
    <h2 class="no-ref no-num heading settled" id="conformance"><span class="content"> Conformance</span><a class="self-link" href="#conformance"></a></h2>
@@ -1915,9 +1974,9 @@ Operations).
   </dl>
   <h2 class="no-num no-ref heading settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
   <div style="counter-reset:issue">
-   <div class="issue"> BTCR uses txref-exts, or txrefs that deviate from Bech32 Encoded
-Transaction Position References: <a href="https://github.com/w3c-ccg/didm-btcr/issues/1">didm-btcr issue
-1</a><a href="#issue-97a857cd"> ↵ </a></div>
+   <div class="issue"> BTCR uses txref-exts, or extended txrefs that also include a
+reference to the TXO index within the transaction. <a href="https://github.com/w3c-ccg/didm-btcr/issues/1">didm-btcr issue
+1</a><a href="#issue-400baf42"> ↵ </a></div>
   </div>
   <aside class="dfn-panel" data-for="block">
    <b><a href="#block">#block</a></b><b>Referenced in:</b>

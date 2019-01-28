@@ -79,33 +79,33 @@ Basic Concepts {#concepts}
 Txref and Txref-ext {#txref}
 -------------------
 
-Txref encoded transaction ids are detailed BIP 136, <a
-href="https://github.com/veleslavs/bips/blob/c83837536d6629f754ce5a88bbe245e0a615e76e/bip-XXXX-Bech32_Encoded_Transaction_Position_References.mediawiki">Bech32
+Txref encoded transaction ids are detailed BIP-0136, <a
+href="https://github.com/veleslavs/bips/blob/txrev_v2/bip-0136.mediawiki">Bech32
 Encoded Transaction Position References</a>. A txref encodes the chain,
 blockheight, and transaction index where the transaction is located.
 
 <div class="example" heading="txref (base)"> txid
-89b3cc05d196836064ab189e9747f05ab036e29e24340dd360e05a1b04ad8637 is on
-the testnet3 chain, at blockheight 1290689, transaction position 6. Its
-txref is <pre>txtest1-xzuc-wzcq-qqz6-565h</pre></div>
+67c0ee676221d9e0e08b98a55a8bf8add9cba854f13dda393e38ffa1b982b833 is on
+the testnet3 chain, at blockheight 1201739, transaction position 2. Its
+txref is <pre>txtest1:xkyt-fzzq-q4wq-f2d</pre></div>
 
-Issue: BTCR uses txref-exts, or txrefs that deviate from Bech32 Encoded
-Transaction Position References: <a
+Issue: BTCR uses txref-exts, or extended txrefs that also include a
+reference to the TXO index within the transaction. <a
 href="https://github.com/w3c-ccg/didm-btcr/issues/1">didm-btcr issue
 1</a>
 
 This extended encoding is similar to the base encoding, but with the
 following modifications:
 
-1. Remove network prefixes (e.g. txtest1)
-2. Support for additionally specifying tx output index
+1. Remove chain-specific prefixes (e.g. 'tx1' or 'txtest1')
+2. Support for additionally specifying tx output index (txref-ext)
 3. Future: support lightning ids
 
 <div class="example" heading="txref-ext"> txid
-89b3cc05d196836064ab189e9747f05ab036e29e24340dd360e05a1b04ad8637 is on
-the testnet3 chain, at blockheight 1290689, transaction position 6 and
+67c0ee676221d9e0e08b98a55a8bf8add9cba854f13dda393e38ffa1b982b833 is on
+the testnet3 chain, at blockheight 1201739, transaction position 2 and
 we want to specify the second tx output (index 1). Its txref-ext is
-<pre>xzuc-wzcq-qqpq-qapuzs8</pre></div>
+<pre>8kyt-fzzq-qpqq-ljsc-5l</pre></div>
 
 
 BTCR DID Format {#format}
@@ -121,9 +121,9 @@ BTCR DIDs have the following format:
 </pre>
 
 <div class="example" heading="BTCR DID"> A BTCR DID for txid
-89b3cc05d196836064ab189e9747f05ab036e29e24340dd360e05a1b04ad8637, on the
-testnet3 chain, at blockheight 1290689, transaction position 6 and tx
-output index 1 is <pre>did:btcr:xzuc-wzcq-qqpq-qapuzs8</pre></div>
+67c0ee676221d9e0e08b98a55a8bf8add9cba854f13dda393e38ffa1b982b833, on the
+testnet3 chain, at blockheight 1201739, transaction position 2 and tx
+output index 1 is <pre>did:btcr:8kyt-fzzq-qpqq-ljsc-5l</pre></div>
 
 Authentication {#authentication}
 --------------
@@ -139,7 +139,7 @@ granted by the BTCR DID.
 <pre>
 {
   "@context": "https://w3id.org/btcr/v1",
-  "id": "did:btcr:xkyt-fzgq-qq87-xnhn",
+  "id": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l",
   <span class="highlight">"authentication": [... array of acceptable authentication suites ...]</span>
 }
 </pre>
@@ -152,13 +152,13 @@ credentials entry">
 <pre>
 {
   "@context": "https://w3id.org/btcr/v1",
-  "id": "did:btcr:xkyt-fzgq-qq87-xnhn",
+  "id": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l",
   "authentication": [{
     "type": "EdDsaSAPublicKeySecp256k1Authentication",
     "publicKey": {
-      "id": "did:btcr:xkyt-fzgq-qq87-xnhn#keys-1",
+      "id": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l#keys-1",
       "type": "EdDsaSAPublicKeySecp256k1",
-      "owner": "did:btcr:xkyt-fzgq-qq87-xnhn",
+      "owner": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l",
       "publicKeyHex": "0280e0b456b9e97eecb8028215664c5b99ffa79628b60798edd9d562c6db1e4f85"
     }
   }],
@@ -328,6 +328,61 @@ DDO Correlation Risks
 Herd Privacy
 ------------
 
+Appendix A: Examples
+====================
 
+Typical DID Document
+--------------------
 
+The following is a complete example of a typical BTCR DID Document:
 
+<div class="example" heading="Typical BTCR DID Document">
+<pre>
+{
+	"@context": "https://w3id.org/did/v1",
+	"id": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l",
+	"publicKey": [
+		{
+			"id": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l#keys-1",
+			"owner": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l",
+			"type": "EdDsaSAPublicKeySecp256k1",
+			"publicKeyHex": "0280e0b456b9e97eecb8028215664c5b99ffa79628b60798edd9d562c6db1e4f85"
+		},
+		{
+			"id": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l#keys-2",
+			"type": "RsaVerificationKey2018",
+			"publicKeyPem": "-----BEGIN PUBLIC KEY...END PUBLIC KEY-----\r\n",
+			"owner": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l"
+		}
+	],
+	"authentication": [
+		{
+			"type": "EdDsaSAPublicKeySecp256k1Authentication",
+			"publicKey": "#keys-1"
+		},
+		{
+			"type": "RsaSignatureAuthentication2018",
+			"publicKey": "#keys-2"
+		}
+	],
+	"service": [
+		{
+			"type": "BTCREndpoint",
+			"serviceEndpoint": "https://raw.githubusercontent.com/kimdhamilton/did/master/ddo.jsonld"
+		}
+	],
+	"SatoshiAuditTrail": [
+		{
+			"chain": "testnet",
+			"blockhash": "0000000000000722ded9d85d67e145ba41c53ef2e8680f75540a08b885febba5",
+			"blockindex": 2,
+			"outputindex": 1,
+			"blocktime": "2017-09-23T17:27:56.682Z",
+			"time": 1499501000,
+			"timereceived": "2017-09-23T17:27:56.682Z",
+			"burn-fee": -0.05
+		}
+	]
+}
+</pre>
+</div>
