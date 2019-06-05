@@ -1578,10 +1578,10 @@ output index 1 is
 
    <h3 class="heading settled" data-level="3.3" id="default-cap"><span class="secno">3.3. </span><span class="content">Default DID Document</span><a class="self-link" href="#default-cap"></a></h3>
    <p>
-   	If you've ever performed a standard Bitcoin transaction, you probably have a BTCR DID. That's because the BTCR Method, by convention, associates 2 capabilities with the transaction signing key. These capabilities are added by a DID Resolver during the resolution process (assuming the txout is unspent and there's no OP_RETURN field):
+   	The BTCR Method, by convention, grants the transaction signing key of a standard bitcoin transaction (where the specified or first output is unspent) certain default capabilities. These capabilities are added by a DID Resolver during the resolution process (assuming the txout is unspent and there's no OP_RETURN field):
 				<ol>
-					<li>DID auth</li>
-					<li>Sign/verify Verifiable Credentials</li>
+					<li>Authentication</li>
+					<li>Sign Verifiable Credentials</li>
 				</ol>
 
 	We will see in the following sections that these default capabilities apply only to the first transaction in a BTCR transaction chain; i.e. all subsequent transactions must use an OP_RETURN, or the DID is considered revoked or deleted.
@@ -1607,10 +1607,8 @@ A BTCR DID is considered revoked if:
 </p>
 
 <p>
-TODO: this applies to all semantics. This behavior must be enforced by BTCR resolvers.
+Otherwise, the BTCR DID is not revoked, and the latest transaction in the chain should be used by the resolver.
 </p>
-
-
 
    <h3 class="heading settled" data-level="3.6" id="??"><span class="secno">3.6. </span><span class="content">???</span><a class="self-link" href="#??"></a></h3>
    <p>
