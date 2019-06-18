@@ -1439,7 +1439,7 @@ Parts of this work may be from another specification document.  If so, those par
     <li>
      <a href="#concepts"><span class="secno">3</span> <span class="content">Basic Concepts</span></a>
      <ol class="toc">
-      <li><a href="#txref"><span class="secno">3.1</span> <span class="content">Txref</span></a>
+      <li><a href="#TxRef"><span class="secno">3.1</span> <span class="content">TxRef</span></a>
       <li><a href="#format"><span class="secno">3.2</span> <span class="content">BTCR DID Format</span></a>
       <li><a href="#default-cap"><span class="secno">3.3</span> <span class="content">Default DID Documents</span></a>
       <li><a href="#continuation"><span class="secno">3.4</span> <span class="content">Continuation DID Documents</span></a>
@@ -1508,7 +1508,7 @@ absolute mimimal personal information disclosure. Other DID methods will
 likely need to loosen these standards.</p>
    <p>Some aspects of the BTCR method will not be practical if inappropriately
 scaled — for instance, there is a transaction cost to update keys and
-DDO object, potential UTXO inflation (i.e. one additional unspent output
+DDO object, potential UTXO inflation (i.e. one additional unspent Outpoint
 for every BTCR-based identity), and even if segwit isn’t used it could
 cause blockchain bloat. However, identities using the BTCR method can be
 a strong as Bitcoin itself -- currently securing billions of dollars of
@@ -1533,29 +1533,29 @@ should be excavated.</p>
    <p><dfn data-dfn-type="dfn" data-noexport id="decentralized-ledger">decentralized ledger<a class="self-link" href="#decentralized-ledger"></a></dfn>: A <a data-link-type="dfn" href="#cryptographic-ledger" id="ref-for-cryptographic-ledger">cryptographic ledger</a> that uses a <a data-link-type="dfn" href="#consensus-algorithm" id="ref-for-consensus-algorithm">consensus algorithm</a> that enables a network of ledger nodes to come
 to consensus in a decentralized yet deterministic fashion.</p>
    <h2 class="heading settled" data-level="3" id="concepts"><span class="secno">3. </span><span class="content">Basic Concepts</span><a class="self-link" href="#concepts"></a></h2>
-   <h3 class="heading settled" data-level="3.1" id="txref"><span class="secno">3.1. </span><span class="content">Txref</span><a class="self-link" href="#txref"></a></h3>
-   <p>Txref encoded transaction ids are detailed BIP-0136, <a href="https://github.com/bitcoin/bips/blob/e9ff93f41ab3f9645f2e74cffe6a6039df82cf3c/bip-0136.mediawiki">Bech32 Encoded Transaction Position References</a>. A txref encodes the chain, blockheight, and transaction index where the transaction is located, and an optional reference to the TXO index within the transaction.</p>
+   <h3 class="heading settled" data-level="3.1" id="TxRef"><span class="secno">3.1. </span><span class="content">TxRef</span><a class="self-link" href="#TxRef"></a></h3>
+   <p>BTCR identifiers use the TxRef encoding to refer to a transaction position within the Bitcoin blockchain, as described in BIP-0136, <a href="https://github.com/bitcoin/bips/blob/master/bip-0136.mediawiki">Bech32 Encoded Transaction Position References</a>. A TxRef encodes the chain, blockheight, and transaction index where the transaction is located, and an optional reference to the Outpoint Index (TODO: define) within the transaction.</p>
 
-   <p>Because the txref encodes the transaction's position in the Bitcoin blockchain, that means it is only known after a transaction has been confirmed. That distinguishes it from, for example, transaction ids (hashes), which are known even before confirmation.</p>
+   <p>Because the TxRef encodes the transaction's position in the Bitcoin blockchain, that means it is only known after a transaction has been confirmed. That distinguishes it from, for example, transaction ids (hashes), which are known even before confirmation.</p>
 
    <p>The BTCR Method Specification has chosed to elide chain-specific prefixes (e.g. <a class="property" data-link-type="propdesc">tx1</a> or <a class="property" data-link-type="propdesc">txtest1</a>), as permitted by BIP-0136.</p>
    <div class="example no-marker" id="example-4042c018">
     <a class="self-link" href="#example-4042c018"></a>
-    <div class="marker">EXAMPLE: txref (without TXO index)</div>
+    <div class="marker">EXAMPLE: TxRef (without Outpoint Index)</div>
      txid
 67c0ee676221d9e0e08b98a55a8bf8add9cba854f13dda393e38ffa1b982b833 is on
 the testnet3 chain, at blockheight 1201739, transaction position 2. Its
-txref is 
+TxRef is 
 <pre>xjk0-uqay-zat0-dz8</pre>
 </div>
 
 <div class="example no-marker" id="example-819a6dd7">
     <a class="self-link" href="#example-819a6dd7"></a>
-    <div class="marker">EXAMPLE: txref (with TXO index)</div>
+    <div class="marker">EXAMPLE: TxRef (with Outpoint Index)</div>
      txid
 67c0ee676221d9e0e08b98a55a8bf8add9cba854f13dda393e38ffa1b982b833 is on
 the testnet3 chain, at blockheight 1201739, transaction position 2 and
-we want to specify the second tx output (index 1). Its txref is 
+we want to specify the second tx Outpoint Index (index 1). Its TxRef is 
 <pre>8qqq-qqqq-qqqq-cgrufa</pre>
    </div>
    
@@ -1564,7 +1564,7 @@ we want to specify the second tx output (index 1). Its txref is
 <pre>btcr-did        = "did:btcr:" btcr-identifier
                  [ ";" did-service ] [ "/" did-path ]
                  [ "?" did-query ] [ "#" did-fragment ]
-btcr-identifier = txref-ext encoded transaction id
+btcr-identifier = TxRef encoded transaction id
 </pre>
    <div class="example no-marker" id="example-aa00c35b">
     <a class="self-link" href="#example-aa00c35b"></a>
@@ -1572,13 +1572,13 @@ btcr-identifier = txref-ext encoded transaction id
      A BTCR DID for txid
 67c0ee676221d9e0e08b98a55a8bf8add9cba854f13dda393e38ffa1b982b833, on the
 testnet3 chain, at blockheight 1201739, transaction position 2 and tx
-output index 1 is 
+Outpoint index 1 is 
 <pre>did:btcr:8kyt-fzzq-qpqq-ljsc-5l</pre>
    </div>
 
    <h3 class="heading settled" data-level="3.3" id="default-cap"><span class="secno">3.3. </span><span class="content">Default DID Document</span><a class="self-link" href="#default-cap"></a></h3>
    <p>
-   	The BTCR Method, by convention, grants the transaction signing key of a standard bitcoin transaction (where the specified or first output is unspent) certain default capabilities. These capabilities are added by a DID Resolver during the resolution process (assuming the txout is unspent and there's no OP_RETURN field):
+   	The BTCR Method, by convention, grants the transaction signing key of a standard bitcoin transaction (where the Outpoint is unspent) certain default capabilities. These capabilities are added by a DID Resolver during the resolution process (assuming the txout is unspent and there's no OP_RETURN field):
 				<ol>
 					<li>Authentication</li>
 					<li>Sign Verifiable Credentials</li>
@@ -1597,7 +1597,7 @@ output index 1 is
 
    <h3 class="heading settled" data-level="3.5" id="following"><span class="secno">3.5. </span><span class="content">Following the tip</span><a class="self-link" href="#following"></a></h3>
    <p>
-Tge TX Output address specified by DID, or 1st monetary output if not specified, is used for "following the tip". If spent, the BTCR DID has either been rotated or revoked. Resolvers must follow the tip to find the latest transaction.
+The Output Index specified by BTCR Identifier, or first monetary output if not specified, is used for "following the tip". If spent, the BTCR DID has either been rotated or revoked. Resolvers must follow the tip to find the latest transaction.
 
 A BTCR DID is considered revoked if:
 		<ol>
@@ -1654,10 +1654,10 @@ credentials entry</div>
   "@context": "https://w3id.org/btcr/v1",
   "id": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l",
   "authentication": [{
-    "type": "EdDsaSAPublicKeySecp256k1Authentication",
+    "type": "EdDsaSAPublicKeySecp256k1Authentication???",
     "publicKey": {
       "id": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l#keys-1",
-      "type": "Secp256k1VerificationKey2018",
+      "type": "EcdsaSecp256k1VerificationKey2019",
       "owner": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l",
       "publicKeyHex": "0280e0b456b9e97eecb8028215664c5b99ffa79628b60798edd9d562c6db1e4f85"
     }
@@ -1698,26 +1698,26 @@ described in this section.</p>
     <li data-md>
      <p>Issue TX0 and wait for confirmation. <a href="https://github.com/w3c-ccg/didm-btcr/issues/7">didm-btcr issue 7</a></p>
     <li data-md>
-     <p>Get TX Ref encoding of the confirmed transaction TXREF(TX0)</p>
+     <p>Get TX Ref encoding of the confirmed transaction TxRef(TX0)</p>
    </ol>
-   <p>At this point we have a DID of the format did:btcr:TXREF(TX0).</p>
+   <p>At this point we have a DID of the format did:btcr:TxRef(TX0).</p>
    <h3 class="heading settled" data-level="4.2" id="reading"><span class="secno">4.2. </span><span class="content">Reading a DID</span><a class="self-link" href="#reading"></a></h3>
    <ol>
     <li data-md>
-     <p>Extract the transaction references from the BTCR DID (i.e. did:btcr:TXREF(TX0))</p>
+     <p>Extract the transaction references from the BTCR DID (i.e. did:btcr:TxRef(TX0))</p>
     <li data-md>
-     <p>Look up transaction. Is the transaction output spent?</p>
+     <p>Look up transaction. Is the Outpoint Index spent?</p>
      <ul>
       <li data-md>
        <p>no: this is the latest version of the DID. From this we can construct the DID Description (described below)</p>
       <li data-md>
-       <p>yes: keep following transaction chain until the latest with an unspent output is found</p>
+       <p>yes: keep following transaction chain until the latest with an unspent Outpoint is found</p>
      </ul>
    </ol>
    <p>See <a href="https://github.com/WebOfTrustInfo/rebooting-the-web-of-trust-spring2018/pull/74"> BTCR resolver</a> for additional details. TODO: merge in</p>
    <h3 class="heading settled" data-level="4.3" id="updating"><span class="secno">4.3. </span><span class="content">Updating a DID</span><a class="self-link" href="#updating"></a></h3>
-   <p>An entity updates the BTCR DID Description by spending the current
-transaction output. The BTCR Transaction Structure diagram shows how
+   <p>An entity updates the BTCR DID Description by spending the current transaction
+Outpoint. The BTCR Transaction Structure diagram shows how
 that is done in this second transaction.</p>
    <ol>
     <li data-md>
@@ -1731,7 +1731,7 @@ that is done in this second transaction.</p>
    <p>A BTCR DID is considered deleted (or revoked) if the latest transaction has no OP_RETURN and there is more than one transaction in the BTCR DID chain.</p>
    <p>
    <p>An entity updates the BTCR DID Description by spending the current
-transaction output. The BTCR Transaction Structure diagram shows how
+transaction Outpoint. The BTCR Transaction Structure diagram shows how
 that is done in this second transaction.</p>
    <ol>
     <li data-md>
@@ -1804,7 +1804,7 @@ Operations).
     {
       "id": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l#keys-1",
       "owner": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l",
-      "type": "Secp256k1VerificationKey2018",
+      "type": "EcdsaSecp256k1VerificationKey2019",
       "publicKeyHex": "0280e0b456b9e97eecb8028215664c5b99ffa79628b60798edd9d562c6db1e4f85"
     },
     {
@@ -1816,7 +1816,7 @@ Operations).
   ],
   "authentication": [
     {
-      "type": "Secp256k1VerificationKey2018",
+      "type": "EcdsaSecp256k1VerificationKey2019",
       "publicKey": "#keys-1"
     },
     {
@@ -2012,7 +2012,7 @@ Operations).
   </dl>
   <h2 class="no-num no-ref heading settled" id="issues-index"><span class="content">Issues Index</span><a class="self-link" href="#issues-index"></a></h2>
   <div style="counter-reset:issue">
-   <div class="issue"> BTCR uses txref-exts, or extended txrefs that also include a
+   <div class="issue"> BTCR uses TxRef-exts, or extended TxRefs that also include a
 reference to the TXO index within the transaction. <a href="https://github.com/w3c-ccg/didm-btcr/issues/1">didm-btcr issue
 1</a><a href="#issue-400baf42"> ↵ </a></div>
   </div>
