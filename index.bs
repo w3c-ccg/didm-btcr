@@ -7,7 +7,7 @@ Group: Credentials Community Group
 URL: https://w3c-ccg.github.io/didm-btcr/
 
 Editor: Christopher Allen, http://www.lifewithalacrity.com/
-Editor: Kim Hamilton Duffy, Learning Machine https://learningmachine.com/, https://github.com/kimdhamilton
+Editor: Kim Hamilton Duffy, https://github.com/kimdhamilton
 Editor: Ryan Grant
 Editor: Dan Pape, https://github.com/danpape
 
@@ -46,15 +46,14 @@ Terminology {#terminology}
 
 <dfn>block</dfn>: A data structure that contains one or more [=ledger=] events.
 
-<dfn>blockchain</dfn>: A [=ledger=] containing a series of [=blocks=]
+<dfn>blockchain</dfn>: A [=ledger=] containing a series of [=block=]s
 where the ordering of the blocks can be mathematically proven to be
 correct.
 
 <dfn>consensus algorithm</dfn>: An algorithm that enables multiple nodes
 in a network to make a decision in a deterministic fashion.
 
-<dfn>continuation [=DID=] document</dfn>: A continuation [=DID=] document is a
-partial document external to the Bitcoin transaction providing
+<dfn>continuation [=DID=] document</dfn>: A continuation [=DID=] document is an optional document external to the Bitcoin transaction providing
 additional DID document keys, ...
 
 <dfn>cryptographic ledger</dfn>: A method of recording changes in a
@@ -73,38 +72,36 @@ should be excavated.
 [=consensus algorithm=] that enables a network of ledger nodes to come
 to consensus in a decentralized yet deterministic fashion.
 
+<dfn>ledger</dfn>: TODO.
+
+<dfn>outpoint</dfn>: [=outpoint index=].
+
+<dfn>outpoint index</dfn>: A bitcoin transaction output. Also called outpoint (without index). 
+This terminology is chosen for consistency with <a href="https://github.com/bitcoin/bips/blob/master/bip-0136.mediawiki">BIP-136</a>.
+
 Basic Concepts {#concepts}
 ==============
 
-Txref and Txref-ext {#txref}
--------------------
+Txref {#txref}
+--------------
 
-Txref encoded transaction ids are detailed BIP-0136, <a
-href="https://github.com/veleslavs/bips/blob/txrev_v2/bip-0136.mediawiki">Bech32
-Encoded Transaction Position References</a>. A txref encodes the chain,
-blockheight, and transaction index where the transaction is located.
+BTCR identifiers use the TxRef encoding to refer to a transaction position within the Bitcoin blockchain, as described in BIP-0136, <a href="https://github.com/bitcoin/bips/blob/master/bip-0136.mediawiki">Bech32 Encoded Transaction Position References</a>. A TxRef encodes the chain, blockheight, and transaction index where the transaction is located, and an optional reference to the [=outpoint index=] within the transaction.
 
-<div class="example" heading="txref (base)"> txid
+Because the TxRef encodes the transaction's position in the Bitcoin blockchain, that means it is only known after a transaction has been confirmed. That distinguishes it from, for example, transaction ids (hashes), which are known even before confirmation.
+
+The BTCR Method Specification has chosed to elide chain-specific prefixes (e.g. tx1 or txtest1), as permitted by BIP-0136.
+
+
+<div class="example" heading="TxRef (without outpoint index)"> txid
 67c0ee676221d9e0e08b98a55a8bf8add9cba854f13dda393e38ffa1b982b833 is on
 the testnet3 chain, at blockheight 1201739, transaction position 2. Its
-txref is <pre>txtest1:xkyt-fzzq-q4wq-f2d</pre></div>
+TxRef is <pre>xkyt-fzzq-q4wq-f2d</pre></div>
 
-Issue: BTCR uses txref-exts, or extended txrefs that also include a
-reference to the TXO index within the transaction. <a
-href="https://github.com/w3c-ccg/didm-btcr/issues/1">didm-btcr issue
-1</a>
 
-This extended encoding is similar to the base encoding, but with the
-following modifications:
-
-1. Remove chain-specific prefixes (e.g. 'tx1' or 'txtest1')
-2. Support for additionally specifying tx output index (txref-ext)
-3. Future: support lightning ids
-
-<div class="example" heading="txref-ext"> txid
+<div class="example" heading="TxRef (with outpoint index)"> txid
 67c0ee676221d9e0e08b98a55a8bf8add9cba854f13dda393e38ffa1b982b833 is on
 the testnet3 chain, at blockheight 1201739, transaction position 2 and
-we want to specify the second tx output (index 1). Its txref-ext is
+we want to specify the second transaction [=outpoint index=] (index 1). Its TxRef is
 <pre>8kyt-fzzq-qpqq-ljsc-5l</pre></div>
 
 
@@ -117,19 +114,65 @@ BTCR DIDs have the following format:
       btcr-did        = "did:btcr:" btcr-identifier
                        [ ";" did-service ] [ "/" did-path ]
                        [ "?" did-query ] [ "#" did-fragment ]
-      btcr-identifier = txref-ext encoded transaction id
+      btcr-identifier = TxRef encoded transaction id
 </pre>
 
 <div class="example" heading="BTCR DID"> A BTCR DID for txid
 67c0ee676221d9e0e08b98a55a8bf8add9cba854f13dda393e38ffa1b982b833, on the
 testnet3 chain, at blockheight 1201739, transaction position 2 and tx
-output index 1 is <pre>did:btcr:8kyt-fzzq-qpqq-ljsc-5l</pre></div>
+[=outpoint index=] 1 is <pre>did:btcr:8kyt-fzzq-qpqq-ljsc-5l</pre></div>
+
+BTCR DID construction {#btcr_construction}
+---------------------
+BTCR DID transactions can be constructed in two ways: with or without an OP_RETURN field. If the transaction does not have an OP_RETURN field, it is granted default capabilities constructed from the transaction itself, resulting in a generated DID document. Otherwise, its capabilities are determined by the DID document (called continuation document) referenced in the OP_RETURN field.
+
+
+Default Capabilities {#default_cap}
+--------------------
+If an (unspent) BTCR DID's transaction does not contain an OP_RETURN field, a DID resolver must generate the DID Document from the transaction itself. Specifically, it must grant the transaction signing key the following capabilities:
+
+1. Authentication
+2. Sign Verifiable Credentials
+
+We will see in the following sections that this option of BTCR DID construction is only possible for the first transaction in a BTCR transaction chain; i.e. all subsequent transactions must use an OP_RETURN, or the DID is considered revoked or deleted.
+
+Continuation DID Documents {#continuation}
+--------------------------
+
+If an (unspent) BTCR DID's transaction contains an OP_RETURN field, the OP_RETURN field must contain an HTTP URL pointing to a DID document (specifying the key material, capabilities, and service endpoints). Note that the default capabilities described above are not granted; a DID resolver must return the referenced DID document as is.
+
+With this construction, the DID document referenced by the transaction must be updated after  confirmation with the BTCR DID (which is known only after the tx is confirmed) and signed with the transaction signing key with a timestamp.
+
+The OP_RETURN field may be used in the first transaction in a BTCR chain, and must be used for all subsequent transactions in the chain, up to the point of revocation or deletion. 
+
+Note: If the OP_RETURN exists, the continuation DID document obviates the need for additional implicit capabilities; we assume each capability is listed explicitly in the continuation DID document.
+
+
+Following the tip {#following}
+-----------------
+
+The transaction [=outpoint index=] specified by DID, or first monetary [=outpoint index=] if not specified, is used for "following the tip". A spent [=outpoint=] indicates an updated or deleted (revoked) DID. A DID resolver determines whether it's updated (and finds the latest) or deleted by walking the chain of spent transaction [=outpoint=] (or "following the tip) as follows.
+
+Note: If any transaction [=outpoint=] is spent, then the transaction chain is greater than one by definition. This algorithm applies only to transaction chains greater than one. (TODO: awkward)
+
+<pre>
+DO
+    transaction := (transaction that spent Outpoint)
+WHILE (current transaction Outpoint is spent OR OP_RETURN field is missing)
+</pre>
+
+If the latest transaction in the chain has no OP_RETURN, a BTCR DID is considered deleted (revoked).
+
+Otherwise, the BTCR DID is not revoked, and the latest transaction in the chain should be used by the resolver.
+
 
 Authentication {#authentication}
 --------------
 
 Authentication is the process the ledger uses to determine if an entity
-is associated with a DID. By convention, BTCR grants the transaction
+is associated with a DID. 
+
+TODO (this is out of date; merge with default capabilities above): By convention, BTCR grants the transaction
 signing key the ability to authenticate. Authentication is the only
 default ability; meaning that if there is no continuation DID Document,
 then authentication with the transaction signing key is the only ability
@@ -154,7 +197,7 @@ credentials entry">
   "@context": "https://w3id.org/btcr/v1",
   "id": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l",
   "authentication": [{
-    "type": "EdDsaSAPublicKeySecp256k1Authentication",
+    "type": "EcdsaSecp256k1VerificationKey2019",
     "publicKey": {
       "id": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l#keys-1",
       "type": "EdDsaSAPublicKeySecp256k1",
@@ -166,27 +209,6 @@ credentials entry">
 </pre>
 </div>
 
-Continuation DID Documents {#continuation}
---------------------------
-
-Because BTCR DIDs have very limited capabilities (authentication with
-the tx signing key), BTCR uses the concept of continuation documents to
-provide additional key material, capabilities, and service endpoints.
-
-The continuation DID document is referenced by a link from the
-transaction OP_RETURN field. The continuation DID document must be
-signed in one of the following ways:
-
-1. Continuation DID document is stored in an immutable store. In this case, the signature on the transaction suffices to sign the continuation DID document.
-
-2. Continuation DID document is signed with the transaction signing key, along with a timestamp. This is necessary if the document is in a mutable store; otherwise the document can be changed at any time.
-
-Immutable storage for the DID document is preferred. A DID document in a
-mutable store MUST be signed exactly once with the timestamp.
-
-* TODO: in mutable case, are there any restrictions on delta btw tx timestamp and DID document timestamp?
-
-* TODO: where did we land on presence of @id in mutable store case. Must it be present, in which case the document can only be updated after the tx is confirmed.
 
 
 Operations {#operations}
@@ -212,17 +234,17 @@ Creating the initial BTCR DID:
     2. Optional output: OP_RETURN <link to DDO continuation>
     3. Signing key is S0, which reveals public key P0 in the transaction
 4. Issue TX0 and wait for confirmation. <a href="https://github.com/w3c-ccg/didm-btcr/issues/7">didm-btcr issue 7</a>
-5. Get Extended TX Ref encoding of the confirmed transaction TXREF(TX0) <a href="https://github.com/w3c-ccg/didm-btcr/issues/1">didm-btcr issue 1</a>
+5. Get TX Ref encoding of the confirmed transaction TxRef(TX0)
 
-At this point we have a DID of the format did:btcr:TXREF(TX0). 
+At this point we have a DID of the format did:btcr:TxRef(TX0). 
 
 Reading a DID {#reading}
 -------------
 
-1. Extract the transaction references from the BTCR DID (i.e. did:btcr:TXREF(TX0))
-2. Look up transaction. Is the transaction output spent?
+1. Extract the transaction references from the BTCR DID (i.e. did:btcr:TxRef(TX0))
+2. Look up transaction. Is the [=outpoint index=] spent?
     * no: this is the latest version of the DID. From this we can construct the DID Description (described below)
-    * yes: keep following transaction chain until the latest with an unspent output is found
+    * yes: keep following transaction chain until the latest with an unspent [=outpoint=] is found
 
 See <a
 href="https://github.com/WebOfTrustInfo/rebooting-the-web-of-trust-spring2018/pull/74">
@@ -233,7 +255,7 @@ Updating a DID {#updating}
 --------------
 
 An entity updates the BTCR DID Description by spending the current
-transaction output. The BTCR Transaction Structure diagram shows how
+transaction [=outpoint=]. The BTCR Transaction Structure diagram shows how
 that is done in this second transaction.
 
 1. Create new tx like above, but send to B2
@@ -244,8 +266,13 @@ that is done in this second transaction.
 Deleting a DID {#deleting}
 --------------
 
-TODO
+A BTCR DID is considered deleted (or revoked) if the latest transaction has no OP_RETURN and there is more than one transaction in the BTCR DID chain.
 
+An entity updates the BTCR DID Description by spending the current transaction output. The BTCR Transaction Structure diagram shows how that is done in this second transaction.
+
+1. Create new tx like above, but send to B2
+2. Omit the OP_RETURN
+3. Sign tx with S1 (P1 is revealed)
 
 Versioning {#versioning}
 ==========
@@ -345,7 +372,7 @@ The following is a complete example of a typical BTCR DID Document:
 		{
 			"id": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l#keys-1",
 			"owner": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l",
-			"type": "EdDsaSAPublicKeySecp256k1",
+			"type": "EcdsaSecp256k1VerificationKey2019",
 			"publicKeyHex": "0280e0b456b9e97eecb8028215664c5b99ffa79628b60798edd9d562c6db1e4f85"
 		},
 		{
@@ -357,11 +384,11 @@ The following is a complete example of a typical BTCR DID Document:
 	],
 	"authentication": [
 		{
-			"type": "EdDsaSAPublicKeySecp256k1Authentication",
+			"type": "EcdsaSecp256k1VerificationKey2019",
 			"publicKey": "#keys-1"
 		},
 		{
-			"type": "RsaSignatureAuthentication2018",
+			"type": "RsaVerificationKey2018",
 			"publicKey": "#keys-2"
 		}
 	],
