@@ -46,7 +46,7 @@ Terminology {#terminology}
 
 <dfn>block</dfn>: A data structure that contains one or more [=ledger=] events.
 
-<dfn>blockchain</dfn>: A [=ledger=] containing a series of [=blocks=]
+<dfn>blockchain</dfn>: A [=ledger=] containing a series of [=block=]s
 where the ordering of the blocks can be mathematically proven to be
 correct.
 
@@ -72,7 +72,11 @@ should be excavated.
 [=consensus algorithm=] that enables a network of ledger nodes to come
 to consensus in a decentralized yet deterministic fashion.
 
-<dfn>outpoint</dfn>: A bitcoin transaction output. Also called outpoint index. 
+<dfn>ledger</dfn>: TODO.
+
+<dfn>outpoint</dfn>: [=outpoint index=].
+
+<dfn>outpoint index</dfn>: A bitcoin transaction output. Also called outpoint (without index). 
 This terminology is chosen for consistency with <a href="https://github.com/bitcoin/bips/blob/master/bip-0136.mediawiki">BIP-136</a>.
 
 Basic Concepts {#concepts}
@@ -81,23 +85,23 @@ Basic Concepts {#concepts}
 Txref {#txref}
 --------------
 
-BTCR identifiers use the TxRef encoding to refer to a transaction position within the Bitcoin blockchain, as described in BIP-0136, <a href="https://github.com/bitcoin/bips/blob/master/bip-0136.mediawiki">Bech32 Encoded Transaction Position References</a>. A TxRef encodes the chain, blockheight, and transaction index where the transaction is located, and an optional reference to the Outpoint Index (TODO: define) within the transaction.
+BTCR identifiers use the TxRef encoding to refer to a transaction position within the Bitcoin blockchain, as described in BIP-0136, <a href="https://github.com/bitcoin/bips/blob/master/bip-0136.mediawiki">Bech32 Encoded Transaction Position References</a>. A TxRef encodes the chain, blockheight, and transaction index where the transaction is located, and an optional reference to the [=outpoint index=] within the transaction.
 
 Because the TxRef encodes the transaction's position in the Bitcoin blockchain, that means it is only known after a transaction has been confirmed. That distinguishes it from, for example, transaction ids (hashes), which are known even before confirmation.
 
-The BTCR Method Specification has chosed to elide chain-specific prefixes (e.g. <a class="property" data-link-type="propdesc">tx1</a> or <a class="property" data-link-type="propdesc">txtest1</a>), as permitted by BIP-0136.
+The BTCR Method Specification has chosed to elide chain-specific prefixes (e.g. tx1 or txtest1), as permitted by BIP-0136.
 
 
-<div class="example" heading="TxRef (without Outpoint Index)"> txid
+<div class="example" heading="TxRef (without outpoint index)"> txid
 67c0ee676221d9e0e08b98a55a8bf8add9cba854f13dda393e38ffa1b982b833 is on
 the testnet3 chain, at blockheight 1201739, transaction position 2. Its
 TxRef is <pre>xkyt-fzzq-q4wq-f2d</pre></div>
 
 
-<div class="example" heading="TxRef (with Outpoint Index)"> txid
+<div class="example" heading="TxRef (with outpoint index)"> txid
 67c0ee676221d9e0e08b98a55a8bf8add9cba854f13dda393e38ffa1b982b833 is on
 the testnet3 chain, at blockheight 1201739, transaction position 2 and
-we want to specify the second transaction output index (index 1). Its TxRef is
+we want to specify the second transaction [=outpoint index=] (index 1). Its TxRef is
 <pre>8kyt-fzzq-qpqq-ljsc-5l</pre></div>
 
 
@@ -116,7 +120,7 @@ BTCR DIDs have the following format:
 <div class="example" heading="BTCR DID"> A BTCR DID for txid
 67c0ee676221d9e0e08b98a55a8bf8add9cba854f13dda393e38ffa1b982b833, on the
 testnet3 chain, at blockheight 1201739, transaction position 2 and tx
-Outpoint index 1 is <pre>did:btcr:8kyt-fzzq-qpqq-ljsc-5l</pre></div>
+[=outpoint index=] 1 is <pre>did:btcr:8kyt-fzzq-qpqq-ljsc-5l</pre></div>
 
 BTCR DID construction {#btcr_construction}
 ---------------------
@@ -147,9 +151,9 @@ Note: If the OP_RETURN exists, the continuation DID document obviates the need f
 Following the tip {#following}
 -----------------
 
-The transaction Outpoint index specified by DID, or first monetary Outpoint index if not specified, is used for "following the tip". A spent Outpoint indicates an updated or deleted (revoked) DID. A DID resolver determines whether it's updated (and finds the latest) or deleted by walking the chain of spent transaction outpoints (or "following the tip) as follows.
+The transaction [=outpoint index=] specified by DID, or first monetary [=outpoint index=] if not specified, is used for "following the tip". A spent [=outpoint=] indicates an updated or deleted (revoked) DID. A DID resolver determines whether it's updated (and finds the latest) or deleted by walking the chain of spent transaction [=outpoint=] (or "following the tip) as follows.
 
-Note: If any transaction outpoint is spent, then the transaction chain is greater than one by definition. This algorithm applies only to transaction chains greater than one. (TODO: awkward)
+Note: If any transaction [=outpoint=] is spent, then the transaction chain is greater than one by definition. This algorithm applies only to transaction chains greater than one. (TODO: awkward)
 
 <pre>
 DO
@@ -238,9 +242,9 @@ Reading a DID {#reading}
 -------------
 
 1. Extract the transaction references from the BTCR DID (i.e. did:btcr:TxRef(TX0))
-2. Look up transaction. Is the Outpoint Index spent?
+2. Look up transaction. Is the [=outpoint index=] spent?
     * no: this is the latest version of the DID. From this we can construct the DID Description (described below)
-    * yes: keep following transaction chain until the latest with an unspent Outpoint is found
+    * yes: keep following transaction chain until the latest with an unspent [=outpoint=] is found
 
 See <a
 href="https://github.com/WebOfTrustInfo/rebooting-the-web-of-trust-spring2018/pull/74">
@@ -251,7 +255,7 @@ Updating a DID {#updating}
 --------------
 
 An entity updates the BTCR DID Description by spending the current
-transaction Outpoint. The BTCR Transaction Structure diagram shows how
+transaction [=outpoint=]. The BTCR Transaction Structure diagram shows how
 that is done in this second transaction.
 
 1. Create new tx like above, but send to B2
