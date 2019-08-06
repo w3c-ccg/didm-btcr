@@ -262,7 +262,7 @@ that is done in this second transaction.
 2. Set the OP_RETURN to the new DID Description
 3. Sign tx with S1 (P1 is revealed)
 
-<img src="https://github.com/w3c-ccg/didm-btcr/blob/gh-pages/diagrams/btcr-tx-ref.png" alt="BTCR Transaction Structure">
+<img src="https://raw.githubusercontent.com/w3c-ccg/didm-btcr/blob/gh-pages/diagrams/btcr-tx-ref.png" alt="BTCR Transaction Structure">
 
 
 Deleting a DID {#deleting}
