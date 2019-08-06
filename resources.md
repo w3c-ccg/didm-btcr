@@ -1,4 +1,4 @@
-# Resources 
+# BTCR Resources 
 
 ## Getting up to speed with BTCR
 - Current state: 
