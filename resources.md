@@ -32,5 +32,11 @@ https://medium.com/@kimdhamilton/btcr-did-method-updates-d0fd14386139
 - https://json-ld.org/playground/ (should be updated for latest JSON-LD cli signing)
 - Code for JSON-LD playground here: https://github.com/json-ld/json-ld.org/tree/master/playground
 
+## Bitcoin Javascript Libraries
+- https://github.com/bitcoin-studio/Bitcoin-Programming-with-BitcoinJS
+- https://www.oreilly.com/library/view/blockchain-by-example/9781788475686/9d5518be-c115-40c7-a409-36586b0ff7b3.xhtml
+- https://bitcoindev.network/guides/bitcoinjs-lib/legacy-pay-to-public-key-hash/
+- "in-browser" wallet: https://coinb.in 
+
 ## Community
 - [Web of Trust Discourse Group](https://weboftrustinfo.discourse.group/)
