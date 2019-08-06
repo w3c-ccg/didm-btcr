@@ -5,6 +5,7 @@
 https://medium.com/@kimdhamilton/btcr-did-method-updates-d0fd14386139
 - BTCR Method Spec: https://w3c-ccg.github.io/didm-btcr/
 - Amira use case: https://w3c-ccg.github.io/amira
+- BTCR v0.1 Design Decisions: https://github.com/WebOfTrustInfo/rwot7-toronto/blob/master/final-documents/btcr_0_1.pdf
 
 ## BTCR Tools
 - BTCR Playground
