@@ -20,3 +20,7 @@ Run:
 ```
 python bikeshed.py spec ../didm-btcr/index.bs
 ```
+
+## BTCR Resources
+
+[resources.md](resources.md)
