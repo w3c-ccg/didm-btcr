@@ -12,6 +12,7 @@ https://medium.com/@kimdhamilton/btcr-did-method-updates-d0fd14386139
   - [BTCR DID Resolution](https://weboftrustinfo.github.io/btcr-tx-playground.github.io/)
   - [Create BTCR DID](https://weboftrustinfo.github.io/btcr-tx-playground.github.io/create.html)
 - [Satyrn BTCR Developer Tools](https://github.com/satyrnjs/satyrn)
+- [BTCR Electron Wallet](https://github.com/AnthonyRonning/btcr-electron)
 
 ## BTCR Libraries
 - Bech32 (c++): https://github.com/dcdpr/libbech32
