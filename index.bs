@@ -89,7 +89,9 @@ BTCR identifiers use the TxRef encoding to refer to a transaction position withi
 
 Because the TxRef encodes the transaction's position in the Bitcoin blockchain, that means it is only known after a transaction has been confirmed. That distinguishes it from, for example, transaction ids (hashes), which are known even before confirmation.
 
-The BTCR Method Specification has chosed to elide chain-specific prefixes (e.g. tx1 or txtest1), as permitted by BIP-0136.
+Modifications to BIP-0136:
+
+1. The BTCR Method Specification has chosen to elide chain-specific prefixes (e.g. tx1 or txtest1), as permitted by BIP-0136.
 
 
 <div class="example" heading="TxRef (without outpoint index)"> txid
@@ -103,6 +105,24 @@ TxRef is <pre>xkyt-fzzq-q4wq-f2d</pre></div>
 the testnet3 chain, at blockheight 1201739, transaction position 2 and
 we want to specify the second transaction [=outpoint index=] (index 1). Its TxRef is
 <pre>8kyt-fzzq-qpqq-ljsc-5l</pre></div>
+
+2. The BTCR Method Specification does not allow ambiguity that arises when the transaction [=outpoint index=] is 0
+
+In the case where a BTCR-related transaction specifies an [=outpoint index=], and that [=outpoint index=] is 0, the short form of the BTCR DID must be used.
+
+<div class="example" heading="BTCR Transaction outpoint index 0 ambiguity example">
+For testnet transaction <pre>f8cdaff3ebd9e862ed5885f8975489090595abe1470397f79780ead1c7528107</pre>, if referring to outpoint index 0, the BTCR DID must be resolved as follows:
+
+VALID: <pre>did:btcr:xyv2-xzpq-q9wa-p7t</pre>
+INVALID: <pre>did:btcr:8yv2-xzpq-qqqq-9yce-nk</pre>
+</div>
+
+
+BIP136 supports both forms for index 0, but we are making the decision that BTCR supports only the short form when index==0. This is for the following reasons:
+- clarity for resolution implementers
+- ambiguous id is a potential security issue
+
+If a DID resolver encounters the invalid form, it must reject the input as invalid.
 
 
 BTCR DID Format {#format}
@@ -129,12 +149,39 @@ BTCR DID transactions can be constructed in two ways: with or without an OP_RETU
 
 Default Capabilities {#default_cap}
 --------------------
-If an (unspent) BTCR DID's transaction does not contain an OP_RETURN field, a DID resolver must generate the DID Document from the transaction itself. Specifically, it must grant the transaction signing key the following capabilities:
+If an (unspent) BTCR DID's transaction does not contain an OP_RETURN field, a DID resolver must generate the DID Document from the transaction itself. Specifically, it grants the transaction signing key the following capabilities:
 
 1. Authentication
 2. Sign Verifiable Credentials
 
+
+<div class="example" heading="Detailed example of default capabilities">
+<pre>
+{
+    "@context": ["https://w3id.org/did/v0.11", "https://w3id.org/btcr/v1"],
+    "id": "did:btcr:xyv2-xzpq-q9wa-p7t",
+    "publicKey": [
+       {
+            "id": "did:btcr:xyv2-xzpq-q9wa-p7t#satoshi",
+            "controller": "did:btcr:xyv2-xzpq-q9wa-p7t",
+            "type": "EcdsaSecp256k1VerificationKey2019",
+            "publicKeyBase58": "owh12LKNuphe97teJTZKQTKNewSVTwjHcskPbq34epCY"
+        },
+        {
+             "id": "did:btcr:xyv2-xzpq-q9wa-p7t#vckey-0",
+             "controller": "did:btcr:xyv2-xzpq-q9wa-p7t",
+             "type": "EcdsaSecp256k1VerificationKey2019",
+             "publicKeyBase58": "owh12LKNuphe97teJTZKQTKNewSVTwjHcskPbq34epCY"
+         }
+    ],
+    "authentication": ["#satoshi"],
+    "assertionMethod": ["#vckey-0"]
+}
+</pre>
+</div>
+
 We will see in the following sections that this option of BTCR DID construction is only possible for the first transaction in a BTCR transaction chain; i.e. all subsequent transactions must use an OP_RETURN, or the DID is considered revoked or deleted.
+
 
 Continuation DID Documents {#continuation}
 --------------------------
@@ -164,52 +211,6 @@ WHILE (current transaction Outpoint is spent OR OP_RETURN field is missing)
 If the latest transaction in the chain has no OP_RETURN, a BTCR DID is considered deleted (revoked).
 
 Otherwise, the BTCR DID is not revoked, and the latest transaction in the chain should be used by the resolver.
-
-
-Authentication {#authentication}
---------------
-
-Authentication is the process the ledger uses to determine if an entity
-is associated with a DID. 
-
-TODO (this is out of date; merge with default capabilities above): By convention, BTCR grants the transaction
-signing key the ability to authenticate. Authentication is the only
-default ability; meaning that if there is no continuation DID Document,
-then authentication with the transaction signing key is the only ability
-granted by the BTCR DID.
-
-<div class="example" heading="Expressing authentication credentials">
-<pre>
-{
-  "@context": "https://w3id.org/btcr/v1",
-  "id": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l",
-  <span class="highlight">"authentication": [... array of acceptable authentication suites ...]</span>
-}
-</pre>
-</div>
-
-A detailed example of a valid set of authentication credentials follows:
-
-<div class="example" heading="Detailed example of authentication
-credentials entry">
-<pre>
-{
-  "@context": "https://w3id.org/btcr/v1",
-  "id": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l",
-  "authentication": [{
-    "type": "EcdsaSecp256k1VerificationKey2019",
-    "publicKey": {
-      "id": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l#keys-1",
-      "type": "EdDsaSAPublicKeySecp256k1",
-      "owner": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l",
-      "publicKeyHex": "0280e0b456b9e97eecb8028215664c5b99ffa79628b60798edd9d562c6db1e4f85"
-    }
-  }],
-  ...
-</pre>
-</div>
-
-
 
 Operations {#operations}
 ==========
@@ -367,51 +368,33 @@ The following is a complete example of a typical BTCR DID Document:
 
 <div class="example" heading="Typical BTCR DID Document">
 <pre>
+
 {
-	"@context": "https://w3id.org/did/v1",
-	"id": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l",
-	"publicKey": [
-		{
-			"id": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l#keys-1",
-			"owner": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l",
-			"type": "EcdsaSecp256k1VerificationKey2019",
-			"publicKeyHex": "0280e0b456b9e97eecb8028215664c5b99ffa79628b60798edd9d562c6db1e4f85"
-		},
-		{
-			"id": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l#keys-2",
-			"type": "RsaVerificationKey2018",
-			"publicKeyPem": "-----BEGIN PUBLIC KEY...END PUBLIC KEY-----\r\n",
-			"owner": "did:btcr:8kyt-fzzq-qpqq-ljsc-5l"
-		}
-	],
-	"authentication": [
-		{
-			"type": "EcdsaSecp256k1VerificationKey2019",
-			"publicKey": "#keys-1"
-		},
-		{
-			"type": "RsaVerificationKey2018",
-			"publicKey": "#keys-2"
-		}
-	],
-	"service": [
-		{
-			"type": "BTCREndpoint",
-			"serviceEndpoint": "https://raw.githubusercontent.com/kimdhamilton/did/master/ddo.jsonld"
-		}
-	],
-	"SatoshiAuditTrail": [
-		{
-			"chain": "testnet",
-			"blockhash": "0000000000000722ded9d85d67e145ba41c53ef2e8680f75540a08b885febba5",
-			"blockindex": 2,
-			"outputindex": 1,
-			"blocktime": "2017-09-23T17:27:56.682Z",
-			"time": 1499501000,
-			"timereceived": "2017-09-23T17:27:56.682Z",
-			"burn-fee": -0.05
-		}
-	]
+    "@context": ["https://w3id.org/did/v0.11", "https://w3id.org/btcr/v1"],
+    "id": "did:btcr:xyv2-xzpq-q9wa-p7t",
+    "publicKey": [
+       {
+            "id": "did:btcr:xyv2-xzpq-q9wa-p7t#satoshi",
+            "controller": "did:btcr:xyv2-xzpq-q9wa-p7t",
+            "type": "EcdsaSecp256k1VerificationKey2019",
+            "publicKeyBase58": "owh12LKNuphe97teJTZKQTKNewSVTwjHcskPbq34epCY"
+        },
+        {
+             "id": "did:btcr:xyv2-xzpq-q9wa-p7t#vckey-0",
+             "controller": "did:btcr:xyv2-xzpq-q9wa-p7t",
+             "type": "EcdsaSecp256k1VerificationKey2019",
+             "publicKeyBase58": "owh12LKNuphe97teJTZKQTKNewSVTwjHcskPbq34epCY"
+         }
+    ],
+    "authentication": ["#satoshi"],
+    "assertionMethod": ["#vckey-0"],
+    "service":
+      {
+        "id": "did:btcr:xyv2-xzpq-q9wa-p7t#CRS",
+        "type": "BTCR-CredentialRepositoryService",
+      "serviceEndpoint": "https://github.com/ChristopherA/self/blob/master/ddo.jsonld?hl=z87f623hkjh578v76dsf873h"
+      },
 }
+
 </pre>
 </div>
